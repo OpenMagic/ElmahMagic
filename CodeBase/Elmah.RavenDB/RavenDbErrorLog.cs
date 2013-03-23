@@ -39,6 +39,8 @@ namespace Elmah
                 throw new ArgumentNullException("error");
             }
 
+            error.Time = error.Time.ToUniversalTime();
+
             var errorXml = ErrorXml.EncodeString(error);
             var errorDoc = new ErrorDocument
             {

@@ -6,6 +6,8 @@ using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Extensions;
 using Raven.Client.Linq;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 
 namespace Elmah
 {
@@ -41,26 +43,19 @@ namespace Elmah
 
             error.Time = error.Time.ToUniversalTime();
 
-            var errorXml = ErrorXml.EncodeString(error);
-            var errorDoc = new ErrorDocument
-            {
-                ApplicationName = ApplicationName,
-                Error = error,
-                ErrorXml = errorXml
-            };
-
+            var errorDocument = error.MapToErrorDocument();
+            
             using (var session = _documentStore.OpenSession())
             {
-                session.Store(errorDoc);
+                session.Store(errorDocument);
                 session.SaveChanges();
             }
 
-            return errorDoc.Id;
+            return errorDocument.Id;
         }
-
+ 
         public override ErrorLogEntry GetError(string id)
         {
-            ErrorLogEntry result;
             ErrorDocument document;
 
             using (var session = _documentStore.OpenSession())
@@ -68,16 +63,10 @@ namespace Elmah
                 document = session.Load<ErrorDocument>(id);
             }
 
-            if (!string.IsNullOrEmpty(document.ErrorXml))
-            {
-                result = new ErrorLogEntry(this, id, ErrorXml.DecodeString(document.ErrorXml));
-            }
-            else
-            {
-                result = new ErrorLogEntry(this, id, document.Error);
-            }
+            var error = ErrorXml.DecodeString(document.ErrorXml);
+            var logEntry = new ErrorLogEntry(this, id, error);
 
-            return result;
+            return logEntry;
         }
 
         public override int GetErrors(int pageIndex, int pageSize, IList errorEntryList)
@@ -91,7 +80,7 @@ namespace Elmah
                                     .Statistics(out stats)
                                     .Skip(pageSize * pageIndex)
                                     .Take(pageSize)
-                                    .OrderByDescending(c => c.Error.Time);
+                                    .OrderByDescending(c => c.Time);
 
                 if (!string.IsNullOrWhiteSpace(ApplicationName))
                 {
@@ -100,7 +89,8 @@ namespace Elmah
 
                 foreach (var errorDocument in result)
                 {
-                    errorEntryList.Add(new ErrorLogEntry(this, errorDocument.Id, errorDocument.Error));
+                    var error = ErrorXml.DecodeString(errorDocument.ErrorXml);
+                    errorEntryList.Add(new ErrorLogEntry(this, errorDocument.Id, error));
                 }
 
                 return stats.TotalResults;
@@ -142,7 +132,6 @@ namespace Elmah
                 ConnectionStringName = _connectionStringName
             };
 
-            _documentStore.Conventions.DocumentKeyGenerator = (dbname, commands, entity) => Guid.NewGuid().ToString();
             _documentStore.Initialize();
         }
 

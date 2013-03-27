@@ -24,7 +24,5 @@ namespace Elmah
 
         public DateTime? Reviewed { get; set; }
         public DateTime? Resolved { get; set; }
-
-        public string ErrorXml { get; set; }
     }
 }

@@ -3,16 +3,47 @@ using System.Collections.Specialized;
 
 namespace Elmah
 {
-    public static class Mapping 
+    public static class Mapping
     {
+        public static void AddToNameValueCollection(this IList<KeyValuePair<string, string>> list, NameValueCollection collection)
+        {
+            foreach (var keyValuePair in list)
+            {
+                collection.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
+
+        public static Error MapToError(this ErrorDocument errorDocument)
+        {
+            var error = new Error(errorDocument.Exception)
+            {
+                ApplicationName = errorDocument.ApplicationName,
+                Detail = errorDocument.Detail,
+                HostName = errorDocument.HostName,
+                Message = errorDocument.Message,
+                Source = errorDocument.Source,
+                StatusCode = errorDocument.StatusCode,
+                Time = errorDocument.Time,
+                Type = errorDocument.Type,
+                User = errorDocument.User,
+                WebHostHtmlMessage = errorDocument.WebHostHtmlMessage
+            };
+
+            errorDocument.Cookies.AddToNameValueCollection(error.Cookies);
+            errorDocument.Form.AddToNameValueCollection(error.Form);
+            errorDocument.QueryString.AddToNameValueCollection(error.QueryString);
+            errorDocument.ServerVariables.AddToNameValueCollection(error.ServerVariables);
+
+            return error;
+        }
+
         public static ErrorDocument MapToErrorDocument(this Error error)
         {
-            return new ErrorDocument 
+            return new ErrorDocument
             {
                 ApplicationName = error.ApplicationName,
                 Cookies = error.Cookies.MapToListOfKeyValuePair(),
                 Detail = error.Detail,
-                ErrorXml = ErrorXml.EncodeString(error),
                 Exception = error.Exception,
                 Form = error.Form.MapToListOfKeyValuePair(),
                 HostName = error.HostName,
@@ -39,5 +70,6 @@ namespace Elmah
 
             return list;
         }
+
     }
 }

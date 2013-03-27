@@ -63,7 +63,7 @@ namespace Elmah
                 document = session.Load<ErrorDocument>(id);
             }
 
-            var error = ErrorXml.DecodeString(document.ErrorXml);
+            var error = document.MapToError();
             var logEntry = new ErrorLogEntry(this, id, error);
 
             return logEntry;
@@ -89,7 +89,7 @@ namespace Elmah
 
                 foreach (var errorDocument in result)
                 {
-                    var error = ErrorXml.DecodeString(errorDocument.ErrorXml);
+                    var error = errorDocument.MapToError();
                     errorEntryList.Add(new ErrorLogEntry(this, errorDocument.Id, error));
                 }
 

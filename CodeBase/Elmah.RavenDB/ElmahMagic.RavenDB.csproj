@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Elmah</RootNamespace>
-    <AssemblyName>Elmah.RavenDB</AssemblyName>
+    <AssemblyName>ElmahMagic.RavenDB</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -62,9 +62,6 @@
     <Compile Include="RavenDbErrorLog.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Elmah.RavenDB.nuspec">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

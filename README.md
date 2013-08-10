@@ -4,7 +4,7 @@ Collection of providers and utilities for [ELMAH](http://code.google.com/p/elmah
 
 ## Elmah.RavenDB
 
-If a fork of https://github.com/ccellar/Elmah.RavenDB 
+Is a fork of https://github.com/ccellar/Elmah.RavenDB 
 
 ### License
 

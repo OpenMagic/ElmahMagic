@@ -1,10 +1,18 @@
 using System;
 using System.Collections.Generic;
+using Common.Logging;
 
 namespace Elmah 
 {
     public class ErrorDocument 
     {
+        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+
+        public ErrorDocument()
+        {
+            Log.Trace("ErrorDocument.ctor");
+        }
+
         public string Id { get; set; }
         public string ApplicationName { get; set; }
         public IList<KeyValuePair<string, string>> Cookies { get; set; }

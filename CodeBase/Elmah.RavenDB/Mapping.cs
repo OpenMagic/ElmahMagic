@@ -1,12 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
+using Common.Logging;
 
 namespace Elmah
 {
     public static class Mapping
     {
+        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+
         public static void AddToNameValueCollection(this IList<KeyValuePair<string, string>> list, NameValueCollection collection)
         {
+            Log.Trace(string.Format("AddToNameValueCollection(list, collection)"));
+
             foreach (var keyValuePair in list)
             {
                 collection.Add(keyValuePair.Key, keyValuePair.Value);
@@ -15,6 +20,8 @@ namespace Elmah
 
         public static Error MapToError(this ErrorDocument errorDocument)
         {
+            Log.Trace("MapToError(errorDocument)");
+            
             var error = new Error(errorDocument.Exception)
             {
                 ApplicationName = errorDocument.ApplicationName,
@@ -39,6 +46,8 @@ namespace Elmah
 
         public static ErrorDocument MapToErrorDocument(this Error error)
         {
+            Log.Trace("MapToErrorDocument");
+
             return new ErrorDocument
             {
                 ApplicationName = error.ApplicationName,
@@ -61,6 +70,8 @@ namespace Elmah
 
         public static IList<KeyValuePair<string, string>> MapToListOfKeyValuePair(this NameValueCollection collection)
         {
+            Log.Trace("MapToListOfKeyValuePair(collection)");
+
             var list = new List<KeyValuePair<string, string>>();
 
             for (int i = 0; i < collection.Count; i++)

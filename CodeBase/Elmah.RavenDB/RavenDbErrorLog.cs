@@ -2,23 +2,24 @@ using System;
 using System.Collections;
 using System.Configuration;
 using System.Linq;
+using Common.Logging;
 using Raven.Client;
 using Raven.Client.Document;
-using Raven.Client.Extensions;
 using Raven.Client.Linq;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 
 namespace Elmah
 {
     public class RavenDbErrorLog : ErrorLog
     {
-        private readonly string _connectionStringName;
+        private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
 
+        private readonly string _connectionStringName;
         private IDocumentStore _documentStore;
 
         public RavenDbErrorLog(IDictionary config)
         {
+            Logger.Trace("RavenDbErrorLog(config)");
+
             if (config == null)
             {
                 throw new ArgumentNullException("config");
@@ -36,6 +37,8 @@ namespace Elmah
 
         public override string Log(Error error)
         {
+            Logger.Trace(string.Format("error: {0}", error));
+
             if (error == null)
             {
                 throw new ArgumentNullException("error");
@@ -44,7 +47,7 @@ namespace Elmah
             error.Time = error.Time.ToUniversalTime();
 
             var errorDocument = error.MapToErrorDocument();
-            
+
             using (var session = _documentStore.OpenSession())
             {
                 session.Store(errorDocument);
@@ -53,9 +56,11 @@ namespace Elmah
 
             return errorDocument.Id;
         }
- 
+
         public override ErrorLogEntry GetError(string id)
         {
+            Logger.Trace(string.Format("GetError(id: {0})", id));
+
             ErrorDocument document;
 
             using (var session = _documentStore.OpenSession())
@@ -71,11 +76,13 @@ namespace Elmah
 
         public override int GetErrors(int pageIndex, int pageSize, IList errorEntryList)
         {
+            Logger.Trace(string.Format("GetErrors(pageIndex: {0}, pageSize: {0}, errorEntryList", pageIndex, pageSize));
+
             using (var session = _documentStore.OpenSession())
             {
                 RavenQueryStatistics stats;
 
-                IQueryable<ErrorDocument> result 
+                IQueryable<ErrorDocument> result
                            = session.Query<ErrorDocument>()
                                     .Statistics(out stats)
                                     .Skip(pageSize * pageIndex)
@@ -99,6 +106,8 @@ namespace Elmah
 
         private void LoadApplicationName(IDictionary config)
         {
+            Logger.Trace("LoadApplicationName(config)");
+
             // Set the application name as this implementation provides
             // per-application isolation over a single store.
             var appName = string.Empty;
@@ -107,11 +116,14 @@ namespace Elmah
                 appName = (string)config["applicationName"];
             }
 
+            Logger.Debug(string.Format("ApplicationName: {0}", appName));
             ApplicationName = appName;
         }
 
         private string GetConnectionStringName(IDictionary config)
         {
+            Logger.Trace(string.Format("GetConnectionStringName(config)"));
+
             var connectionString = LoadConnectionStringName(config);
 
             //
@@ -122,11 +134,14 @@ namespace Elmah
             if (connectionString.Length == 0)
                 throw new ApplicationException("Connection string is missing for the RavenDB error log.");
 
+            Logger.Debug(string.Format("Connection string name: {0}", connectionString));
             return connectionString;
         }
 
         private void InitDocumentStore()
         {
+            Logger.Trace("InitDocumentStore()");            
+            
             _documentStore = new DocumentStore
             {
                 ConnectionStringName = _connectionStringName
@@ -137,6 +152,8 @@ namespace Elmah
 
         private string LoadConnectionStringName(IDictionary config)
         {
+            Logger.Trace("LoadConnectionStringName(config)");
+
             // From ELMAH source
             // First look for a connection string name that can be 
             // subsequently indexed into the <connectionStrings> section of 
